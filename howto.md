@@ -18,4 +18,6 @@ git add *
 git commit -m "cmmt"
 git push
 type nul > howto.md
-git 
+git add *
+git commit -m "howto added"
+git push
