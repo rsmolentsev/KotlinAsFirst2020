@@ -5,7 +5,7 @@ package lesson2.task1
 import lesson1.task1.discriminant
 import kotlin.math.abs
 import kotlin.math.max
-import kotlin.math.pow
+import kotlin.math.min
 import kotlin.math.sqrt
 
 // Урок 2: ветвления (здесь), логический тип (см. 2.2).
@@ -70,15 +70,12 @@ fun minBiRoot(a: Double, b: Double, c: Double): Double {
  * Мой возраст. Для заданного 0 < n < 200, рассматриваемого как возраст человека,
  * вернуть строку вида: «21 год», «32 года», «12 лет».
  */
-fun ageDescription(age: Int): String {
-    val lastTwoDigits = age % 100
-    val lastDigit = age % 10
-    return when {
-        lastTwoDigits in 11..19 -> "$age лет"
-        lastDigit in 2..4 -> "$age года"
-        lastDigit == 1 -> "$age год"
-        else -> "$age лет"
-    }
+fun ageDescription(age: Int): String = when {
+    age % 10 == 1 && age % 100 != 11 -> "$age год"
+    age % 10 in 2..4 && age % 100 !in 12..14 -> "$age года"
+    else -> "$age лет"
+
+
 }
 
 /**
@@ -177,8 +174,5 @@ fun triangleKind(a: Double, b: Double, c: Double): Int {
  * Найти длину пересечения отрезков AB и CD.
  * Если пересечения нет, вернуть -1.
  */
-fun segmentLength(a: Int, b: Int, c: Int, d: Int): Int {
-    val length = minOf(b, d) - maxOf(a, c)
-    if (length >= 0) return length
-    else return -1
-}
+fun segmentLength(a: Int, b: Int, c: Int, d: Int): Int = if ((b >= c) && (d >= a)) (min(b, d) - max(a, c)) else -1
+

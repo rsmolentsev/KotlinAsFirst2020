@@ -2,9 +2,11 @@
 
 package lesson7.task1
 
+
 import ru.spbstu.wheels.stack
 import java.io.File
 import java.lang.IllegalArgumentException
+
 
 // Урок 7: работа с файлами
 // Урок интегральный, поэтому его задачи имеют сильно увеличенную стоимость
@@ -83,8 +85,25 @@ fun deleteMarked(inputName: String, outputName: String) {
  * Регистр букв игнорировать, то есть буквы е и Е считать одинаковыми.
  *
  */
-fun countSubstrings(inputName: String, substrings: List<String>): Map<String, Int> = TODO()
-
+fun countSubstrings(inputName: String, substrings: List<String>): Map<String, Int> {
+    val text = File(inputName).readText().lowercase()
+    val res = mutableMapOf<String, Int>()
+    for (substring in substrings)
+        res[substring] = countSubstringsWithCross(text, substring.lowercase())
+    return res
+}
+//функция считающая вхождение строк с пересечением(если начало i-ой строки содержится к конце (i-1)-ой строки
+fun countSubstringsWithCross(text: String, substring: String): Int {
+    return if (text.contains(substring)) {
+        var count = 0
+        var i = text.indexOf(substring)
+        while (i != -1) {
+            i = text.indexOf(substring, i + 1)
+            count++
+        }
+        count
+    } else 0
+}
 
 /**
  * Средняя (12 баллов)
@@ -100,7 +119,21 @@ fun countSubstrings(inputName: String, substrings: List<String>): Map<String, In
  *
  */
 fun sibilants(inputName: String, outputName: String) {
-    TODO()
+    val correct = mapOf('ю' to 'у', 'ы' to 'и', 'я' to 'а')
+    val flagLetters = listOf('щ', 'ш', 'ч', 'ж')
+    File(outputName).bufferedWriter().use { writer ->
+        File(inputName).forEachLine { line ->
+            val result = StringBuilder(line[0].toString())
+            for (i in 1 until line.length) {
+                val letter = line[i]
+                val letterLow = line[i].lowercaseChar()
+                if (letterLow in correct && line[i - 1].lowercaseChar() in flagLetters)
+                    result.append(if (letter.isLowerCase()) correct[letterLow]!! else correct[letterLow]!!.uppercaseChar())
+                else result.append(letter)
+            }
+            writer.write("$result\n")
+        }
+    }
 }
 
 /**
@@ -121,7 +154,14 @@ fun sibilants(inputName: String, outputName: String) {
  *
  */
 fun centerFile(inputName: String, outputName: String) {
-    TODO()
+    val lines = File(inputName).readLines().map { it.trim() }
+    val length = if (lines.isNotEmpty()) lines.maxOf { it.length } else 0
+    File(outputName).bufferedWriter().use { writer ->
+        lines.forEach { line ->
+            val indent = (length - line.length) / 2
+            writer.write(" ".repeat(indent) + line + "\n")
+        }
+    }
 }
 
 /**
@@ -213,8 +253,26 @@ fun top20Words(inputName: String): Map<String, Int> = TODO()
  * Обратите внимание: данная функция не имеет возвращаемого значения
  */
 fun transliterate(inputName: String, dictionary: Map<Char, String>, outputName: String) {
-    TODO()
+    val dictionaryLow = dictionary.map { it.key.lowercaseChar() to it.value.lowercase() }.toMap()
+    val writer = File(outputName).writer()
+    val lines = File(inputName).readLines()
+    for (line in lines) {
+        var newLine = buildString { }
+        for (i in line.indices) {
+            newLine += if (line[i].lowercaseChar() in dictionaryLow.keys && !line[i].isUpperCase()) dictionaryLow[line[i].lowercaseChar()]
+            else if (line[i].lowercaseChar() in dictionaryLow.keys && line[i].isUpperCase()) dictionaryLow[line[i].lowercaseChar()]?.replaceFirstChar {
+                if (it.isLowerCase()) it.titlecase(
+                    Locale.getDefault()
+                ) else it.toString()
+                // строчка выше получилась из newLine.capitalize
+            }
+            else line[i]
+        }
+        writer.write("$newLine\n")
+    }
+    writer.close()
 }
+
 
 /**
  * Средняя (12 баллов)
@@ -522,9 +580,44 @@ fun markdownToHtml(inputName: String, outputName: String) {
  *
  */
 fun printMultiplicationProcess(lhv: Int, rhv: Int, outputName: String) {
-    TODO()
+    val writer = File(outputName).writer()
+    val count = max(digitNumber(lhv) + digitNumber(rhv), digitNumber(rhv * lhv) + 1)
+    writer.write(
+        "${newString(count - digitNumber(lhv), ' ')}$lhv\n*${
+            newString(
+                count - digitNumber(rhv) - 1,
+                ' '
+            )
+        }$rhv\n"
+    )
+    writer.write(
+        "${newString(count, '-')}\n${
+            newString(
+                count - digitNumber((rhv % 10) * lhv),
+                ' '
+            )
+        }${(rhv % 10) * lhv}\n"
+    )
+    var second = rhv / 10
+    var countT = 2 // учитывает знак + и переход
+    while (second != 0) {
+        writer.write("+${newString(count - digitNumber((second % 10) * lhv) - countT, ' ')}${(second % 10) * lhv}\n")
+        second /= 10
+        countT++
+    }
+    writer.write("${newString(count, '-')}\n${newString(count - digitNumber(lhv * rhv), ' ')}${lhv * rhv}")
+    writer.close()
 }
-
+// функция делающая строку из n одинаковых символов
+fun newString(n: Int, symbol: Char): String {
+    var newLine = ""
+    var count = n
+    while (count > 0) {
+        newLine += symbol
+        count--
+    }
+    return newLine
+}
 
 /**
  * Сложная (25 баллов)
@@ -547,5 +640,102 @@ fun printMultiplicationProcess(lhv: Int, rhv: Int, outputName: String) {
  *
  */
 fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) {
-    TODO()
+    val writer = File(outputName).writer()
+    val result = lhv / rhv
+    var revResult = result.toString().reversed().toInt()
+    var count = digitNumber(lhv) + 4
+    var countT = digitNumber(rhv * (revResult % 10)) + 1
+    var right = countT
+    var left = 0
+    var n = digitNumber(result) - 1
+    var main = needDigit(left, right, lhv)
+    var minus: Int
+    if (lhv < rhv && digitNumber(lhv) != 1) {
+        writer.write("$lhv | $rhv\n")
+        writer.write("${newString(digitNumber(lhv) - 2, ' ')}-0   0\n")
+        writer.write("${newString(max(digitNumber(lhv), 2), '-')}\n$lhv")
+        writer.close()
+    } else {
+        if (rhv * (revResult % 10) > needDigit(left, right - 1, lhv)) {
+            writer.write("$lhv | $rhv\n")
+            count--
+            main = needDigit(left, right, lhv)
+            right--
+            minus = main - rhv * (revResult % 10)
+            writer.write(
+                "-${rhv * (revResult % 10)}${
+                    newString(
+                        count - digitNumber(rhv * (revResult % 10)) - 1,
+                        ' '
+                    )
+                }$result\n"
+            )
+        } else {
+            minus = main - rhv * (revResult % 10) * 10
+            writer.write(" $lhv | $rhv\n")
+            writer.write(
+                "-${rhv * (revResult % 10)}${
+                    newString(
+                        count - digitNumber(rhv * (revResult % 10)) - 1,
+                        ' '
+                    )
+                }$result\n"
+            )
+        }
+        writer.write("${newString(countT, '-')}\n")
+        if (digitNumber(result) == 1) {
+            writer.write("${newString(countT - digitNumber(lhv - result * rhv), ' ')}${lhv - result * rhv}")
+            writer.close()
+        } else {
+            while (n > 0) {
+                revResult /= 10
+                if (minus < revResult % 10 * rhv) {
+                    minus = minus * 10 + needDigit(right, right + 1, lhv)
+                }
+                var countX = max((digitNumber(rhv * (revResult % 10)) + 1), digitNumber(minus))
+                if (digitNumber(minus) == 1) {
+                    writer.write(
+                        "${
+                            newString(
+                                countT - digitNumber(minus),
+                                ' '
+                            )
+                        }0$minus\n"
+                    )
+                    countX = max(digitNumber(rhv * (revResult % 10)), digitNumber(minus) + 1)
+                } else writer.write("${newString(countT - digitNumber(minus) + 1, ' ')}$minus\n")
+                writer.write(
+                    "${
+                        newString(
+                            countT - digitNumber(rhv * (revResult % 10)),
+                            ' '
+                        )
+                    }-${rhv * (revResult % 10)}\n"
+                )
+                writer.write("${newString(right + 1 - countX, ' ')}${newString(countX, '-')}\n")
+                left = right
+                right++
+                if (n == 1) {
+                    writer.write(
+                        "${
+                            newString(
+                                count - digitNumber(minus - rhv * (revResult % 10)) - 3,
+                                ' '
+                            )
+                        }${minus - rhv * (revResult % 10)}"
+                    )
+                }
+                minus = needDigit(left, right, lhv) + (minus - rhv * (revResult % 10)) * 10
+                countT++
+                n--
+            }
+            writer.close()
+        }
+    }
 }
+// функция считающая нужное значение цифр числа в заданном диапазоне цифр
+fun needDigit(left: Int, right: Int, n: Int): Int {
+    val res = n.toString()
+    return if (right > res.length) res.last().toInt() else res.substring(left, right).toInt()
+}
+

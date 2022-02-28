@@ -2,9 +2,11 @@
 
 package lesson5.task1
 
+
 import ru.spbstu.wheels.NullableMonad.filter
 import java.util.*
 import kotlin.math.pow
+
 
 // Урок 5: ассоциативные массивы и множества
 // Максимальное количество баллов = 14
@@ -101,13 +103,11 @@ fun buildWordSet(text: List<String>): MutableSet<String> {
  *     -> mapOf(5 to listOf("Семён", "Михаил"), 3 to listOf("Марат"))
  */
 fun buildGrades(grades: Map<String, Int>): Map<Int, List<String>> {
-    val result = mutableMapOf<Int, MutableList<String>>()
-    for ((firstName, grade) in grades) {
-        val currentGrade = result[grade]
-        if (currentGrade != null) currentGrade.add(firstName)
-        else result[grade] = mutableListOf(firstName)
+    val m = mutableMapOf<Int, MutableList<String>>()
+    for ((student, grade) in grades) {
+        m.getOrPut(grade) { mutableListOf() }.add(student)
     }
-    return result
+    return m
 }
 
 /**
@@ -185,6 +185,7 @@ fun mergePhoneBooks(mapA: Map<String, String>, mapB: Map<String, String>): Map<S
  *   averageStockPrice(listOf("MSFT" to 100.0, "MSFT" to 200.0, "NFLX" to 40.0))
  *     -> mapOf("MSFT" to 150.0, "NFLX" to 40.0)
  */
+
 fun averageStockPrice(stockPrices: List<Pair<String, Double>>): Map<String, Double> {
     val result = mutableMapOf<String, Double>()
     val count = mutableMapOf<String, Int>()
@@ -197,6 +198,7 @@ fun averageStockPrice(stockPrices: List<Pair<String, Double>>): Map<String, Doub
     }
     return result
 }
+
 
 /**
  * Средняя (4 балла)
@@ -214,15 +216,16 @@ fun averageStockPrice(stockPrices: List<Pair<String, Double>>): Map<String, Doub
  *   ) -> "Мария"
  */
 fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): String? {
-    var result: String? = null
-    var minValue = Double.MAX_VALUE
-    for ((name, description) in stuff) {
-        if (description.first == kind && description.second <= minValue) {
-            result = name
-            minValue = description.second
+    var min = Double.MAX_VALUE
+    var minName = ""
+    for ((nameProduct, kindPrice) in stuff) {
+        if (kindPrice.first == kind && kindPrice.second < min) {
+            min = kindPrice.second
+            minName = nameProduct
         }
     }
-    return result
+    return if (min != Double.MAX_VALUE) minName else null
+
 }
 
 /**
@@ -235,12 +238,14 @@ fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): S
  *   canBuildFrom(listOf('a', 'b', 'o'), "baobab") -> true
  */
 fun canBuildFrom(chars: List<Char>, word: String): Boolean {
-    val charsToSet = chars.toSet()
-    val newWord = word.lowercase()
-    for (char in newWord) {
-        if (!charsToSet.contains(char) && !charsToSet.contains(char.uppercaseChar())) return false
+    var res = true
+    for (i in word.indices) {
+        if (word[i].lowercaseChar() !in chars && word[i].uppercaseChar() !in chars) {
+            res = false
+            break
+        }
     }
-    return true
+    return res
 }
 
 /**
@@ -330,6 +335,7 @@ fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<Stri
  *   findSumOfTwo(listOf(1, 2, 3), 4) -> Pair(0, 2)
  *   findSumOfTwo(listOf(1, 2, 3), 6) -> Pair(-1, -1)
  */
+
 fun findSumOfTwo(list: List<Int>, number: Int): Pair<Int, Int> {
     val numbersAndIndexes = mutableMapOf<Int, Int>()
     for (index in list.indices) {
@@ -339,7 +345,7 @@ fun findSumOfTwo(list: List<Int>, number: Int): Pair<Int, Int> {
         } else numbersAndIndexes[list[index]] = index
     }
     return -1 to -1
-}
+
 
 /**
  * Очень сложная (8 баллов)
@@ -362,6 +368,7 @@ fun findSumOfTwo(list: List<Int>, number: Int): Pair<Int, Int> {
  *     450
  *   ) -> emptySet()
  */
+
 fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<String> {
     val result = mutableSetOf<String>()
     val pack = Array(treasures.size + 1) { Array(capacity + 1) { 0 } }
@@ -385,3 +392,4 @@ fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<Strin
     }
     return result
 }
+
