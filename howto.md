@@ -9,7 +9,7 @@ git remote add upstream-theirs https://github.com/skiterskater/KotlinAsFirst2021
 git fetch upstream-theirs  
 git checkout master  
 git merge backport upstream-theirs/master  
-* all conflicts solved *  
+/ all conflicts solved /  
 git add *  
 git merge --continue  
 type nul > remotes  
