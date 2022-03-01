@@ -13,7 +13,7 @@
 12. git add *  
 13. git merge --continue  
 14. type nul > remotes  
-15. git remotes -v  
+15. git remote -v  
 16. git add *  
 17. git commit -m "cmmt"  
 18. git push  
